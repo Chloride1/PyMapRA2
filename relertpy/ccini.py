@@ -68,7 +68,7 @@ class INISectionClass(MutableMapping):
     def tryparse(self, option, fallback):
         try:
             value: str = self._map[option]
-        except:
+        except KeyError:
             return fallback
 
         if value.isdecimal():  # int
@@ -78,7 +78,7 @@ class INISectionClass(MutableMapping):
         elif value.lower() in Bool.bool_like:  # bool
             return Bool.parse(value)
         elif value.lower() in ('none', '<none>'):  # NoneType
-            return
+            return None
         elif re.match("[^,]+", value):  # Array
             return Array([i.strip() for i in re.split(",+", value)])
         else:  # str itself
@@ -149,7 +149,7 @@ class INIClass:
         try:
             sect = self._raw[section]
             return fallback if not sect.get(key) else sect[key]
-        except:
+        except KeyError:
             return fallback
 
     def gettypelist(self, section, fallback=Array()):

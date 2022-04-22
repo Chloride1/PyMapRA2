@@ -17,4 +17,3 @@ class MapClass(INIClass):
         self.__codec = encoding
 
         super().__init__()
-
