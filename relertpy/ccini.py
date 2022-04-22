@@ -19,7 +19,9 @@ class INIParseException(Exception):
 
 
 class INISectionClass(MutableMapping):
-    def __init__(self, section: str, _super=None, src: MutableMapping = None):
+    def __init__(self,
+                 section: str, _super=None,
+                 *, src: MutableMapping = None):
         self.section = section
         self.super = _super
         self._map = {}
@@ -91,11 +93,6 @@ class INISectionClass(MutableMapping):
         else:  # str itself
             return value
 
-    def rename(self, pini, dest_section_name):
-        pini.remove(self.section)
-        pini[dest_section_name] = self
-        self.section = dest_section_name
-
 
 class INIClass:
     """C&C INI handler.
@@ -118,8 +115,10 @@ class INIClass:
     def __setitem__(self, key, value):
         if not isinstance(key, str):
             raise TypeError("Section name should always be str.")
-
-        self._raw[key] = INISectionClass(key, src=value)
+        if type(value) == INISectionClass:
+            self._raw[key] = value
+        else:
+            self._raw[key] = INISectionClass(key, src=value)
 
     def __delitem__(self, key):
         del self._raw[key]
@@ -151,6 +150,12 @@ class INIClass:
         if not self.hassection(section):
             return
         del self._raw[section]
+
+    def rename(self, _old, _new):
+        self[_new] = INISectionClass(_new,
+                                     self[_old].super,
+                                     src=self[_old])
+        self.remove(_old)
 
     def getvalue(self, section, key, fallback=None):
         try:
