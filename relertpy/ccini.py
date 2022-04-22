@@ -31,7 +31,9 @@ class INISectionClass(MutableMapping):
             self._map = src
 
     def __setitem__(self, k, v):
-        self._map[k] = str(v)
+        self._map[k] = (Bool.tostring(v)  # to be consistent of FA2.
+                        if type(v) == bool
+                        else str(v))
 
     def __delitem__(self, v):
         del self._map[v]

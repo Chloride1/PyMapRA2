@@ -71,7 +71,7 @@ class CTeam(INISectionClass):
 
     def __setitem__(self, key, value):
         if value is None:
-            return super().__setitem__(key, "<None>")
+            return super().__setitem__(key, "<none>")
         elif type(value) == int:
             if key == 'Waypoint':
                 return super().__setitem__(key, Waypoint.tostring(value))
