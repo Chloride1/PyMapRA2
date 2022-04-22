@@ -2,11 +2,10 @@
 # @Time: 2022/04/20 0:00
 # @Author: Chloride
 import re
-from _typeshed import SupportsLessThan
 from os import PathLike
 from typing import MutableMapping
 
-from ..types import Array, Bool
+from .types import Array, Bool
 
 __all__ = ["INIParseException",
            "INIClass", "INISectionClass",
@@ -166,7 +165,7 @@ class INIClass:
     def clear(self):
         return self._raw.clear()
 
-    def sort(self, cond_expr: SupportsLessThan = None, *, reverse=False):
+    def sort(self, cond_expr=None, *, reverse=False):
         _sects = sorted(self.sections, key=cond_expr, reverse=reverse)
         _o_raw = {k: self._raw[k] for k in _sects}
         self._raw = _o_raw
