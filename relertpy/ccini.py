@@ -79,7 +79,7 @@ class INISectionClass(MutableMapping):
             return Bool.parse(value)
         elif value.lower() in ('none', '<none>'):  # NoneType
             return None
-        elif re.match("[^,]+", value):  # Array
+        elif re.findall(",+", value):  # Array
             return Array([i.strip() for i in re.split(",+", value)])
         else:  # str itself
             return value
