@@ -37,7 +37,8 @@ class INISectionClass(MutableMapping):
     def __getitem__(self, k):
         if k in self._map:
             return self.tryparse(k, self._map[k])
-        elif isinstance(self.super, INISectionClass) and (k in self.super):
+        elif (isinstance(self.super, INISectionClass)
+              and k in self.super):
             return self.super.tryparse(k, self.super.get(k))
         else:
             raise KeyError(k)
@@ -58,7 +59,13 @@ class INISectionClass(MutableMapping):
         return self.section
 
     def get(self, key, default=None):
-        return self._map.get(key, default)
+        if key in self._map:
+            return self._map[key]
+        elif (isinstance(self.super, INISectionClass)
+              and key in self.super):
+            return self.super.get(key, default)
+        else:
+            return default
 
     def sortkeys(self, cond_expr=None):
         _items = sorted(self._map.keys(), key=cond_expr)
