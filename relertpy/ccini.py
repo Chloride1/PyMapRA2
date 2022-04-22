@@ -131,7 +131,7 @@ class INIClass:
 
     @property
     def sections(self):
-        return list(self._raw.keys())
+        return list(self._raw.values())
 
     def hassection(self, section):
         return section in self._raw
@@ -178,7 +178,7 @@ class INIClass:
         return self._raw.clear()
 
     def sort(self, cond_expr=None, *, reverse=False):
-        _sects = sorted(self.sections, key=cond_expr, reverse=reverse)
+        _sects = sorted(self._raw.keys(), key=cond_expr, reverse=reverse)
         _o_raw = {k: self._raw[k] for k in _sects}
         self._raw = _o_raw
 
@@ -213,7 +213,7 @@ class INIClass:
         :param withspace: shall we use spaces around '='?
         """
         with open(dst, 'w', encoding=encoding) as fs:
-            for section in self.sections:
+            for section in self._raw.keys():
                 self.__fwrite(fs, section,
                               ' = ' if withspace else '=')
 

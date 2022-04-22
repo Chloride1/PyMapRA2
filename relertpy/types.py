@@ -29,7 +29,10 @@ class Array(Sequence):
         return self._lst.__iter__()
 
     def __repr__(self):
-        return f"@{tuple(self._lst)}"
+        return "@({})".format(str(self._lst)[1:-1])
+
+    def __str__(self):
+        return ",".join(map(str, self._lst))
 
 
 class Coord:
