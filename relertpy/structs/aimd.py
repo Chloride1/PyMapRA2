@@ -10,7 +10,7 @@ In YR, AI consists of these following components:
 - AI triggers: to control how do AI produce teams.
 """
 from ..ccini import INISectionClass
-from ..types import Waypoint, Bool, Array
+from ..types import Waypoint, Array
 
 _team_default = {
     'Max': '5',
@@ -32,19 +32,6 @@ _team_def_no = ("Full", "Whiner", "Droppod", "Suicide", "Loadable",
                 "IsBaseDefense", "UseTransportOrigin",
                 "OnlyTargetHouseEnemy", "TransportsReturnOnUnload")
 _team_def_yes = "AreTeamMembersRecruitable"
-_team_veteran = {
-    1: "1 - 初始",
-    2: "2 - 老兵（一星）",
-    3: "3 - 精英（三星）"
-}
-_team_mc = {
-    0: '0 - 随机',
-    1: '1 - 加入队伍',
-    2: '2 - 回收成钱 (Grinder)',
-    3: '3 - 拉去充电 (InfantryAbsorb)',
-    4: '4 - 寻敌',
-    5: '5 - 发呆'
-}
 
 
 class CTeam(INISectionClass):
@@ -61,13 +48,10 @@ class CTeam(INISectionClass):
         return f'Team {self.section}'
 
     def __getitem__(self, item):
-        _methods = {
-            "Waypoint": lambda x: Waypoint.toint(x),
-            "VeteranLevel": lambda x: _team_veteran[x],
-            "MindControlDecision": lambda x: _team_mc[x],
-            "_default": lambda x: self.tryparse(x, self.get(x))
-        }
-        return _methods.get(item, "_default")(item)
+        if item == 'Waypoint':
+            return Waypoint.toint(self.get(item))
+        else:
+            return self.tryparse(item, self.get(item))
 
     def __setitem__(self, key, value):
         if value is None:
