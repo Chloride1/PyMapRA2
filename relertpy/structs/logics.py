@@ -47,12 +47,6 @@ class CTag:
         self.triggerid = param[2]
         self.repeat = int(param[0])
 
-    def __setattr__(self, key, value):
-        if key == 'repeat' and value not in range(0, 3):
-            raise ValueError("Expect value in 0-2. There is NO 3!")
-        else:
-            return super().__setattr__(key, value)
-
     def apply(self):
         return self.id, ",".join(
             map(str, [self.repeat, self.name, self.triggerid])
