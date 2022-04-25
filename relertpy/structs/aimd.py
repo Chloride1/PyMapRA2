@@ -9,8 +9,9 @@ In YR, AI consists of these following components:
 - Team: to gather both of above, to use in anywhere.
 - AI triggers: to control how do AI produce teams.
 """
+from .celldata import Waypoint
 from ..ccini import INISectionClass
-from ..types import Waypoint, Array
+from ..types import Array
 
 _team_default = {
     'Max': '5',
@@ -34,7 +35,7 @@ _team_def_no = ("Full", "Whiner", "Droppod", "Suicide", "Loadable",
 _team_def_yes = "AreTeamMembersRecruitable"
 
 
-class CTeam(INISectionClass):
+class Team(INISectionClass):
     def __init__(self, pini, index):
         super().__init__(index, src=pini[index])
         # simplify bools.
@@ -74,7 +75,7 @@ class CTeam(INISectionClass):
         return cls(pini, idx)
 
 
-class CScript(INISectionClass):
+class Script(INISectionClass):
     def __init__(self, pini, index):
         super().__init__(index, src=pini[index])
 
@@ -95,7 +96,7 @@ class CScript(INISectionClass):
         return cls(pini, idx)
 
 
-class CTaskForce(INISectionClass):
+class TaskForce(INISectionClass):
     def __init__(self, pini, index):
         super().__init__(index, src=pini[index])
 
@@ -116,7 +117,7 @@ class CTaskForce(INISectionClass):
         return cls(pini, idx)
 
 
-class CAITrigger(Array):
+class AITrigger(Array):
     # this guy doesn't work well in singleplay,
     # so I don't want to declare clearly.
     def __init__(self, pair: tuple[str, str]) -> None:

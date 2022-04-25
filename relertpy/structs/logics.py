@@ -27,7 +27,7 @@ Now with Phobos, int lvars are a great enhancement for mappers.
 """
 
 
-class CLocalVar:
+class LocalVar:
     def __init__(self, args: str):
         self.name = args.split(",")[0]
         self.val = int(args.split(",")[1])  # now var type is int (secsome)
@@ -39,42 +39,23 @@ class CLocalVar:
         return f"{self.name}: int = {self.val}"
 
 
-class CTag:
-    def __init__(self, args: tuple):
-        self.id = args[0]
-        param = args[1].split(',')
-        self.name = param[1]
-        self.triggerid = param[2]
-        self.repeat = int(param[0])
+class Trigger:
+    class Event:
+        def __init__(self):
+            self.id = 0
+            self.params = []
 
-    def apply(self):
-        return self.id, ",".join(
-            map(str, [self.repeat, self.name, self.triggerid])
-        )
+        def __str__(self):
+            return "{},{}".format(self.id, ",".join(self.params))
 
-    def __repr__(self) -> str:
-        return f'Tag {self.id}'
+    class Action:
+        def __init__(self):
+            self.id = 0
+            self.params = []
 
+        def __str__(self):
+            return "{},{}".format(self.id, ",".join(self.params))
 
-class CEvent:
-    def __init__(self):
-        self.id = 0
-        self.params = []
-
-    def __str__(self):
-        return "{},{}".format(self.id, ",".join(self.params))
-
-
-class CAction:
-    def __init__(self):
-        self.id = 0
-        self.params = []
-
-    def __str__(self):
-        return "{},{}".format(self.id, ",".join(self.params))
-
-
-class CTrigger:
     def __init__(self, pini, args: tuple):
         self.id = args[0]
         tmeta = args[1].split(',')
@@ -96,7 +77,7 @@ class CTrigger:
         num = int(sl[0])
         i = 1
         while num > 0:
-            e = CEvent()
+            e = Trigger.Event()
             e.id = int(sl[i])
             indicator = int(sl[i + 1])
             i += 1
@@ -118,7 +99,7 @@ class CTrigger:
         num = int(sl[0])
         i = 1
         while num > 0:
-            a = CAction()
+            a = Trigger.Action()
             a.id = int(sl[i])
             i += 1
             a.params = sl[i:i + 7]
@@ -155,3 +136,20 @@ class CTrigger:
 
     def __repr__(self) -> str:
         return f'Trigger {self.id}'
+
+
+class Tag:
+    def __init__(self, pini, args: tuple):
+        self.id = args[0]
+        param = args[1].split(',')
+        self.name = param[1]
+        self.trigger = Trigger(pini, pini['Triggers'][param[2]])
+        self.repeat = int(param[0])
+
+    def apply(self):
+        return self.id, ",".join(
+            map(str, [self.repeat, self.name, self.trigger.id])
+        )
+
+    def __repr__(self) -> str:
+        return f'Tag {self.id}'

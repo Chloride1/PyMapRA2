@@ -5,6 +5,7 @@ from os import PathLike, path
 from uuid import uuid4
 
 from .ccini import INIClass
+from .structs import *
 
 __all__ = ["MapClass"]
 

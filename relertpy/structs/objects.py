@@ -8,7 +8,7 @@ buildings, vehicles.
 from ..types import Array
 
 
-class CInfantry:
+class Infantry:
     def __init__(self):
         self.owner = 'Neutral House'
         self.typeof = 'E1'
@@ -55,7 +55,7 @@ class CInfantry:
         return f'Infantry {self.typeof} {self.coord}'
 
 
-class CVehicle:
+class Vehicle:
     def __init__(self):
         self.owner = 'Neutral House'
         self.typeof = 'AMCV'
@@ -102,7 +102,7 @@ class CVehicle:
         return f'Vehicle {self.typeof} {self.coord}'
 
 
-class CBuilding:
+class Building:
     def __init__(self):
         self.owner = 'Neutral House'
         self.typeof = 'GAPOWR'
@@ -153,7 +153,7 @@ class CBuilding:
         return f'Building {self.typeof} TopCell{self.coord}'
 
 
-class CAircraft:
+class Aircraft:
     def __init__(self):
         self.owner = 'Neutral House'
         self.typeof = 'ORCA'

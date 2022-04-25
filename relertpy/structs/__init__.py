@@ -1,4 +1,4 @@
-from ..structs.aimd import CTeam, CTaskForce, CScript, CAITrigger
-from ..structs.logics import CLocalVar, CEvent, CAction, CTrigger, CTag
-from ..structs.celldata import CWaypoint, CCellTag, CSmudge, CTerrain
-from ..structs.objects import CVehicle, CInfantry, CAircraft, CBuilding
+from .aimd import Team, TaskForce, Script, AITrigger
+from .logics import LocalVar, Trigger, Tag
+from .celldata import Waypoint, CellTag, Smudge, Terrain
+from .objects import Vehicle, Infantry, Aircraft, Building
