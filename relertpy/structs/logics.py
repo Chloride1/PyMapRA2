@@ -4,26 +4,30 @@
 """
 Logical components are these following items:
 
-- Trigger { Event => Action }
+- Local Variable (bool -> int)
 
-Triggers work just like a C program, with a main process and
-lots of if-else. Though there are randomization now, things
-still work as usual.
+Originally it's just a bool, to help triggers decide when it runs.
 
-Events are just like if-conditions, and actions like sub-
-processes.
+A familiar example is team-trigger association, like SAPC transports
+an MCV then run back.
 
-- Tag
+Now with Phobos, int variables could be a great enhancement for
+map designment.
 
-Tag is a bridge connecting type instances with trigger. You
-can simply control how it affects & which one shall be affected.
+- Trigger: just an 'if' structure.
 
-- Local Variable
+You just consider when it runs (Event) and what will do (Action),
+which is just like this:
 
-Local Variable originally stands for bool, which helps triggers
-check when actions run.
+if (events.satisfied()) { actions.run_foreach() }
 
-Now with Phobos, int lvars are a great enhancement for mappers.
+How about 'else'? You have to use a local variable
+to reverse the condition.
+
+- Tag: a bridge connecting type instances with trigger.
+
+You can simply control how it affects (in trigger) and
+which one shall be affected (TInstance[Inf, ...].tag).
 """
 
 

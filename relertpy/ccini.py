@@ -28,7 +28,7 @@ class INISectionClass(MutableMapping):
         if type(src) == INISectionClass:
             self._map.update(src.items())
         elif isinstance(src, MutableMapping):
-            self._map = src
+            self._map = {str(k): str(v) for k, v in src.items()}
 
     def __setitem__(self, k, v):
         self._map[k] = (Bool.tostring(v)  # to be consistent of FA2.
@@ -158,6 +158,10 @@ class INIClass:
                                      self[_old].super,
                                      src=self[_old])
         self.remove(_old)
+
+    def getsection(self, section):
+        return self._raw.get(section,
+                             INISectionClass(section))
 
     def getvalue(self, section, key, fallback=None):
         try:
