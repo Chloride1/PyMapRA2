@@ -34,10 +34,10 @@ from ..ccini import INISectionClass
 
 class House(INISectionClass):
     def __init__(self, pini, h_name):
-        super().__init__(pini, h_name)
+        super().__init__(h_name, src=pini[h_name])
 
-    def __repr__(self) -> str:
-        return f'House instance: {self.section}'
+    def __repr__(self):
+        return self.section
 
     @classmethod
     def create(cls, pini, h_name):
@@ -60,7 +60,10 @@ class House(INISectionClass):
 
 class Country(INISectionClass):
     def __init__(self, pini, c_name):
-        super().__init__(pini, c_name)
+        super().__init__(c_name, src=pini[c_name])
+
+    def __repr__(self):
+        return self.section
 
     @classmethod
     # without global rules everything is difficult to get= =
@@ -78,6 +81,3 @@ class Country(INISectionClass):
             'ParentCountry': parent
         }
         return cls(pini, name)
-
-    def __repr__(self) -> str:
-        return f'Country abstract: {self.section}'

@@ -9,6 +9,8 @@ In YR, AI consists of these following components:
 - Team: to gather both of above, to use in anywhere.
 - AI triggers: to control how do AI produce teams.
 """
+from types import MappingProxyType
+
 from .celldata import Waypoint
 from ..ccini import INISectionClass
 from ..types import Array
@@ -36,14 +38,17 @@ _team_def_yes = "AreTeamMembersRecruitable"
 
 
 class Team(INISectionClass):
-    def __init__(self, pini, index):
-        super().__init__(index, src=pini[index])
+    def __init__(self, section, *, source=None):
+        if source is None:
+            source = _team_default.copy()
+
+        super().__init__(section, src=source)
         # simplify bools.
         for i in _team_def_no:
             if not self.tryparse(self.get(i), 'no'):
-                self.pop(i, None)
+                del self[i]
         if self.tryparse(self.get(_team_def_yes), 'yes'):
-            self.pop(_team_def_yes, None)
+            del self[_team_def_yes]
 
     def __repr__(self) -> str:
         return f'Team {self.section}'
@@ -66,18 +71,12 @@ class Team(INISectionClass):
                 raise ValueError("Expect MC decision in 0-5.")
         return super().__setitem__(key, value)
 
-    @classmethod
-    # constructor overload
-    def create(cls, pini):
-        idx = pini.getfreeregid()
-        pini.add(idx)
-        pini[idx].update(_team_default)
-        return cls(pini, idx)
-
 
 class Script(INISectionClass):
-    def __init__(self, pini, index):
-        super().__init__(index, src=pini[index])
+    def __init__(self, section, *, source=None):
+        if source is None:
+            source = {'Name': 'New Script'}
+        super().__init__(section, src=source)
 
     def __getitem__(self, item):
         return super().__getitem__(str(item))
@@ -88,17 +87,12 @@ class Script(INISectionClass):
     def __repr__(self):
         return f'Script {self.section}'
 
-    @classmethod
-    # constructor overload
-    def create(cls, pini):
-        idx = pini.getfreeregid()
-        pini[idx] = {"Name": "New Script"}
-        return cls(pini, idx)
-
 
 class TaskForce(INISectionClass):
-    def __init__(self, pini, index):
-        super().__init__(index, src=pini[index])
+    def __init__(self, section, *, source=None):
+        if source is None:
+            source = {"Name": "New Taskforce"}
+        super().__init__(section, src=source)
 
     def __getitem__(self, item):
         return super().__getitem__(str(item))
@@ -109,21 +103,15 @@ class TaskForce(INISectionClass):
     def __repr__(self):
         return f'TaskForce {self.section}'
 
-    @classmethod
-    # constructor overload
-    def create(cls, pini):
-        idx = pini.getfreeregid()
-        pini[idx] = {"Name": "New Taskforce"}
-        return cls(pini, idx)
-
 
 class AITrigger(Array):
     # this guy doesn't work well in singleplay,
     # so I don't want to declare clearly.
-    def __init__(self, pair: tuple[str, str]) -> None:
+    def __init__(self, pair: tuple[str, str | Array]) -> None:
         self.id = pair[0]
-        self.name = pair[1].split(',')[0]  # according to aimd.ini
-        super().__init__(pair[1].split(',')[1:])
+        args = pair[1].split(",") if type(pair[1]) == str else pair[1]
+        self.name = args[0]  # according to aimd.ini
+        super().__init__(args[1:])
         for i in range(len(self)):
             self[i] = self[i].strip()
 

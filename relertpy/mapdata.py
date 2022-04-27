@@ -7,7 +7,7 @@ from uuid import uuid4
 
 from . import structs as meta
 from .ccini import INIClass
-from .types import Bool
+from .types import Array, Bool
 
 __all__ = ['MapClass']
 
@@ -34,46 +34,6 @@ class MapClass(INIClass):
         super().__init__()
         self.load(pathref, encoding)
 
-        self.waypoints = [meta.Waypoint(wp) for wp in
-                          self.getsection("Waypoints").items()]
-        self.terrains = [meta.Terrain(t) for t in
-                         self.getsection("Terrain").items()]
-        self.celltags = [meta.CellTag(c) for c in
-                         self.getsection("CellTags").items()]
-        self.smudges = [meta.Smudge(s) for s in
-                        self.getsection("Smudge").values()]
-        self.taskforces = [meta.TaskForce(self, tf) for tf in
-                           self.getsection("TaskForces").values()]
-        self.scripts = [meta.Script(self, s) for s in
-                        self.getsection("ScriptTypes").values()]
-        self.teams = [meta.Team(self, t) for t in
-                      self.getsection("TeamTypes").values()]
-        self.aitriggers = [meta.AITrigger((idx, raw)) for idx, raw in
-                           self.getsection("AITriggerTypes").items()]
-        self.triggers = [meta.Trigger(self, t) for t in
-                         self.getsection("Triggers").items()]
-        self.tags = [meta.Tag(self, t) for t in
-                     self.getsection("Tags").items()]
-        self.localvars = [meta.LocalVar(lv) for lv in
-                          self.getsection("VariableNames").values()]
-        self.houses = (
-            {idx: f'<Player @ {chr(loc)}>'
-             for idx, loc in zip(range(4475, 4483), range(65, 73))}
-            if self.ismultiplay
-            else [meta.House(self, h) for h in
-                  self.getsection("Houses").values()]
-        )
-        self.countries = [meta.Country(self, cts) for cts in
-                          self.getsection("Countries").values()]
-        self.infantries = [meta.Infantry.loadinf(i) for i in
-                           self.getsection("Infantry").values()]
-        self.units = [meta.Vehicle.loadunit(v) for v in
-                      self.getsection("Units").values()]
-        self.buildings = [meta.Building.loadbuilding(b) for b in
-                          self.getsection("Structures").values()]
-        self.aircrafts = [meta.Aircraft.loadair(a) for a in
-                          self.getsection("Aircrafts").values()]
-
     def getfreeregid(self):
         while True:
             idx = '{0:0>8}-G'.format(str(uuid4())
@@ -82,6 +42,156 @@ class MapClass(INIClass):
             if not self.hassection(idx):
                 break
         return idx
+
+    @property
+    def waypoints(self):
+        return [meta.Waypoint(wp) for wp in
+                self.getsection("Waypoints").items(useraw=True)]
+
+    @property
+    def terrains(self):
+        return [meta.Terrain(t) for t in
+                self.getsection("Terrain").items(useraw=True)]
+
+    @property
+    def celltags(self):
+        return [meta.CellTag(c) for c in
+                self.getsection("CellTags").items(useraw=True)]
+
+    @property
+    def smudges(self):
+        return [meta.Smudge(s) for s in
+                self.getsection("Smudge").values()]
+
+    @property
+    def taskforces(self):
+        return [meta.TaskForce(tf, source=self[tf]) for tf in
+                self.gettypelist("TaskForces")]
+
+    @property
+    def scripts(self):
+        return [meta.Script(s, source=self[s]) for s in
+                self.gettypelist("ScriptTypes")]
+
+    @property
+    def teams(self):
+        return [meta.Team(t, source=self[t]) for t in
+                self.gettypelist("TeamTypes")]
+
+    @property
+    def aitriggers(self):
+        return [meta.AITrigger((idx, raw)) for idx, raw in
+                self.getsection("AITriggerTypes")]
+
+    @property
+    def triggers(self):
+        return [meta.Trigger(self, t) for t in
+                self.getsection("Triggers").items()]
+
+    @property
+    def tags(self):
+        return [meta.Tag(t) for t in
+                self.getsection("Tags").items()]
+
+    @property
+    def localvars(self):
+        return [meta.LocalVar(lv) for lv in
+                self.getsection("VariableNames").values()]
+
+    @property
+    def houses(self):
+        return ({idx: f'<Player @ {chr(loc)}>'
+                 for idx, loc in zip(range(4475, 4483),
+                                     range(65, 73))}
+                if self.ismultiplay
+                else [meta.House(self, h)
+                      for h in self.gettypelist("Houses")])
+
+    @property
+    def countries(self):
+        return [meta.Country(self, cts) for cts in
+                self.gettypelist("Countries")]
+
+    @property
+    def infantries(self):
+        return [meta.Infantry.loadinf(i) for i in
+                self.getsection("Infantry").values()]
+
+    @property
+    def units(self):
+        return [meta.Vehicle.loadunit(v) for v in
+                self.getsection("Units").values()]
+
+    @property
+    def buildings(self):
+        return [meta.Building.loadbuilding(b) for b in
+                self.getsection("Structures").values()]
+
+    @property
+    def aircrafts(self):
+        return [meta.Aircraft.loadair(a) for a in
+                self.getsection("Aircrafts").values()]
+
+    # global settings
+    @property
+    def bridge_destroy(self):
+        return self.getvalue('SpecialFlags',
+                             'DestroyableBridges',
+                             True)
+
+    @bridge_destroy.setter
+    def bridge_destroy(self, val):
+        self.setvalue('SpecialFlags',
+                      'DestroyableBridges',
+                      Bool.tostring(val))
+
+    @property
+    def init_elite(self):
+        return self.getvalue('SpecialFlags',
+                             'InitialVeteran',
+                             False)
+
+    @init_elite.setter
+    def init_elite(self, val):
+        self.setvalue('SpecialFlags',
+                      'InitialVeteran',
+                      Bool.tostring(val))
+
+    @property
+    def mapdata(self):
+        return MappingProxyType(self["Map"])
+
+    @property
+    def ismultiplay(self):
+        return bool((not self.getvalue("Basic", "Player")) or
+                    self.getvalue("Basic", "MultiplayerOnly", False))
+
+    @property
+    def light_changerate(self):
+        # apart from RulesMD I could only preset a value
+        # in vanilla YR.
+        return self.getvalue('AudioVisual',
+                             'AmbientChangeRate',
+                             0.2)
+
+    @light_changerate.setter
+    def light_changerate(self, value):
+        self.setvalue('AudioVisual',
+                      'AmbientChangeRate',
+                      str(float(value)))
+
+    @property
+    def light_changestep(self):
+        # same as above one.
+        return self.getvalue('AudioVisual',
+                             'AmbientChangeStep',
+                             0.2)
+
+    @light_changestep.setter
+    def light_changestep(self, value):
+        self.setvalue('AudioVisual',
+                      'AmbientChangeStep',
+                      str(float(value)))
 
     def save(self, dst=None, encoding=None, withspace=True):
         """
@@ -152,67 +262,6 @@ class MapClass(INIClass):
             }
 
         super().save(dst, encoding, withspace)
-
-    # global settings
-    @property
-    def bridge_destroy(self):
-        return self.getvalue('SpecialFlags',
-                             'DestroyableBridges',
-                             True)
-
-    @bridge_destroy.setter
-    def bridge_destroy(self, val):
-        self.setvalue('SpecialFlags',
-                      'DestroyableBridges',
-                      Bool.tostring(val))
-
-    @property
-    def init_elite(self):
-        return self.getvalue('SpecialFlags',
-                             'InitialVeteran',
-                             False)
-
-    @init_elite.setter
-    def init_elite(self, val):
-        self.setvalue('SpecialFlags',
-                      'InitialVeteran',
-                      Bool.tostring(val))
-
-    @property
-    def mapdata(self):
-        return MappingProxyType(self["Maps"])
-
-    @property
-    def ismultiplay(self):
-        return ((not self.getvalue("Basic", "Player")) or
-                self.getvalue("Basic", "MultiplayerOnly", False))
-
-    @property
-    def light_changerate(self):
-        # apart from RulesMD I could only preset a value
-        # in vanilla YR.
-        return self.getvalue('AudioVisual',
-                             'AmbientChangeRate',
-                             0.2)
-
-    @light_changerate.setter
-    def light_changerate(self, value):
-        self.setvalue('AudioVisual',
-                      'AmbientChangeRate',
-                      str(float(value)))
-
-    @property
-    def light_changestep(self):
-        # same as above one.
-        return self.getvalue('AudioVisual',
-                             'AmbientChangeStep',
-                             0.2)
-
-    @light_changestep.setter
-    def light_changestep(self, value):
-        self.setvalue('AudioVisual',
-                      'AmbientChangeStep',
-                      str(float(value)))
 
     def __repr__(self):
         return self.__full

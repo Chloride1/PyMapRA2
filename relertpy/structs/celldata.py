@@ -97,21 +97,21 @@ class CellTag(Array):
 
 
 class Smudge:
-    def __init__(self, args: str):
-        params = args.split(",")
-        self.typeof = params[0]
-        self.coord = Array(map(int, params[1:3]))
-        self.ignored = params[3] == '1'
+    def __init__(self, args: str | Array):
+        if type(args) == str:
+            args = args.split(',')
+        self.typeof = args[0]
+        self.coord = Array(map(int, args[1:3]))
+        self.ignored = args[3] == '1'
 
     def apply(self):
         return ",".join(
             map(str,
-                [self.typeof, self.coord, int(self.ignored)]
-                )
+                [self.typeof, self.coord, int(self.ignored)])
         )
 
     def __repr__(self) -> str:
-        return f'Smudge {self.typeof} TopCell{self.coord}'
+        return f'{self.typeof} TopCell({self.coord})'
 
 
 class Infantry:
@@ -131,8 +131,9 @@ class Infantry:
         self.autocreate_yes = True
 
     @classmethod
-    def loadinf(cls, args: str):
-        args = args.split(',')
+    def loadinf(cls, args: str | Array):
+        if type(args) == str:
+            args = args.split(',')
         ret = cls()
         ret.owner = args[0]
         ret.typeof = args[1]
@@ -158,7 +159,7 @@ class Infantry:
         ]))
 
     def __repr__(self) -> str:
-        return f'Infantry {self.typeof} {self.coord}'
+        return f'{self.typeof} ({self.coord})'
 
 
 class Vehicle:
@@ -179,7 +180,8 @@ class Vehicle:
 
     @classmethod
     def loadunit(cls, args: str):
-        args = args.split(',')
+        if type(args) == str:
+            args = args.split(',')
         ret = cls()
         ret.owner = args[0]
         ret.typeof = args[1]
@@ -205,7 +207,7 @@ class Vehicle:
         ]))
 
     def __repr__(self) -> str:
-        return f'Vehicle {self.typeof} {self.coord}'
+        return f'{self.typeof} ({self.coord})'
 
 
 class Building:
@@ -226,7 +228,8 @@ class Building:
 
     @classmethod
     def loadbuilding(cls, args: str):
-        args = args.split(',')
+        if type(args) == str:
+            args = args.split(',')
         ret = cls()
         ret.owner = args[0]
         ret.typeof = args[1]
@@ -256,7 +259,7 @@ class Building:
         ]))
 
     def __repr__(self) -> str:
-        return f'Building {self.typeof} TopCell{self.coord}'
+        return f'{self.typeof} TopCell({self.coord})'
 
 
 class Aircraft:
@@ -275,7 +278,8 @@ class Aircraft:
 
     @classmethod
     def loadair(cls, args: str):
-        args = args.split(',')
+        if type(args) == str:
+            args = args.split(',')
         ret = cls()
         ret.owner = args[0]
         ret.typeof = args[1]
@@ -299,4 +303,4 @@ class Aircraft:
         ]))
 
     def __repr__(self) -> str:
-        return f'Aircraft {self.typeof} {self.coord}'
+        return f'{self.typeof} ({self.coord})'

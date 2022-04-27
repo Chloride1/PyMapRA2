@@ -71,6 +71,12 @@ class INISectionClass(MutableMapping):
         else:
             return default
 
+    def values(self, *, useraw=False):
+        return self._map.values() if useraw else super().values()
+
+    def items(self, *, useraw=False):
+        return self._map.items() if useraw else super().items()
+
     def sortkeys(self, cond_expr=None):
         _items = sorted(self._map.keys(), key=cond_expr)
         _o_sect = {k: self._map[k] for k in _items}
@@ -84,7 +90,7 @@ class INISectionClass(MutableMapping):
 
         if value.isdecimal():  # int
             return int(value)
-        elif re.match(r"^[-]?[0-9]+\.?[0-9]+", value):  # float
+        elif re.match(r"^[-]?[0-9]+\.?[0-9]+$", value):  # float
             return float(value)
         elif value.lower() in Bool.bool_like:  # bool
             return Bool.parse(value)
@@ -117,7 +123,7 @@ class INIClass:
     def __setitem__(self, key, value):
         if not isinstance(key, str):
             raise TypeError("Section name should always be str.")
-        if type(value) == INISectionClass:
+        if isinstance(value, INISectionClass):
             self._raw[key] = value
         else:
             self._raw[key] = INISectionClass(key, src=value)
@@ -173,7 +179,7 @@ class INIClass:
     def gettypelist(self, section, fallback=Array()):
         if not self.hassection(section):
             return fallback
-        return list(self._raw[section].values())
+        return list(self._raw[section].values(useraw=True))
 
     def setvalue(self, section, key, value):
         if not self.hassection(section):

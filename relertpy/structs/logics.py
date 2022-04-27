@@ -29,18 +29,21 @@ to reverse the condition.
 You can simply control how it affects (in trigger) and
 which one shall be affected (TInstance[Inf, ...].tag).
 """
+from typing import Sequence
 
 
 class LocalVar:
-    def __init__(self, args: str):
-        self.name = args.split(",")[0]
-        self.val = int(args.split(",")[1])  # now var type is int (secsome)
+    def __init__(self, args: str | Sequence):
+        if type(args) == str:
+            args = args.split(',')
+        self.name = args[0]
+        self.val = int(args[1])  # now var type is int (secsome)
 
     def apply(self):
         return ",".join([self.name, str(self.val)])
 
     def __repr__(self):
-        return f"{self.name}: int = {self.val}"
+        return f"{self.name} = {self.val}"
 
 
 class Trigger:
@@ -60,9 +63,9 @@ class Trigger:
         def __str__(self):
             return "{},{}".format(self.id, ",".join(self.params))
 
-    def __init__(self, pini, args: tuple):
+    def __init__(self, pini, args: tuple[str, str | Sequence]):
         self.id = args[0]
-        tmeta = args[1].split(',')
+        tmeta = args[1].split(',') if type(args[1]) == str else args[1]
         self.owner = tmeta[0]
         self.assoc = tmeta[1]
         self.name = tmeta[2]
@@ -77,7 +80,7 @@ class Trigger:
     def loadevents(self, pini):
         ret = []
         # https://github.com/FrozenFog/Ra2-Map-TriggerNetwork
-        sl = pini['Events'][self.id].split(',')
+        sl = pini['Events'][self.id]  # .split(',')
         num = int(sl[0])
         i = 1
         while num > 0:
@@ -99,7 +102,7 @@ class Trigger:
     def loadactions(self, pini):
         ret = []
         # https://github.com/FrozenFog/Ra2-Map-TriggerNetwork
-        sl = pini['Actions'][self.id].split(',')
+        sl = pini['Actions'][self.id]  # .split(',')
         num = int(sl[0])
         i = 1
         while num > 0:
@@ -143,16 +146,16 @@ class Trigger:
 
 
 class Tag:
-    def __init__(self, pini, args: tuple):
+    def __init__(self, args: tuple[str, str | Sequence]):
         self.id = args[0]
-        param = args[1].split(',')
-        self.name = param[1]
-        self.trigger = Trigger(pini, pini['Triggers'][param[2]])
+        param = args[1].split(',') if type(args[1]) == str else args[1]
         self.repeat = int(param[0])
+        self.name = param[1]
+        self.trigger = param[2]
 
     def apply(self):
         return self.id, ",".join(
-            map(str, [self.repeat, self.name, self.trigger.id])
+            map(str, [self.repeat, self.name, self.trigger])
         )
 
     def __repr__(self) -> str:

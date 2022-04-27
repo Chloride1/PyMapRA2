@@ -9,7 +9,7 @@ class Array(Sequence):
     def __init__(self, *args):
         if not args:
             self._lst = list()
-        elif isinstance(args[0], (list, tuple, set)):
+        elif len(args) == 1:
             self._lst = list(*args)
         else:
             self._lst = list(args)
