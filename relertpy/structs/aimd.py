@@ -9,8 +9,6 @@ In YR, AI consists of these following components:
 - Team: to gather both of above, to use in anywhere.
 - AI triggers: to control how do AI produce teams.
 """
-from types import MappingProxyType
-
 from .celldata import Waypoint
 from ..ccini import INISectionClass
 from ..types import Array

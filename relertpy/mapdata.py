@@ -7,7 +7,7 @@ from uuid import uuid4
 
 from . import structs as meta
 from .ccini import INIClass
-from .types import Array, Bool
+from .types import Bool
 
 __all__ = ['MapClass']
 
