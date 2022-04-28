@@ -90,7 +90,7 @@ class INISectionClass(MutableMapping):
 
         if value.isdecimal():  # int
             return int(value)
-        elif re.match(r"^[-]?[0-9]+\.?[0-9]+$", value):  # float
+        elif re.match(r"^-?\d+\.?\d+$", value):  # float
             return float(value)
         elif value.lower() in Bool.bool_like:  # bool
             return Bool.parse(value)

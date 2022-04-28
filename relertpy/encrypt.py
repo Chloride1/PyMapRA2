@@ -30,7 +30,7 @@ def _barcode_text(ls=16):
     return "".join(ret)
 
 
-_hashers = { # if-...-else NO, switch case YES
+_hashers = {  # if-...-else NO, switch case YES
     'crc32': lambda s: hex(crc32(bytes(s, 'utf-8')) & 0xFFFFFFFF)[2:],
     'guid': lambda s: str(uuid.uuid5(uuid.NAMESPACE_URL, s)),
     'barcode': lambda s: _barcode_text(len(s))
