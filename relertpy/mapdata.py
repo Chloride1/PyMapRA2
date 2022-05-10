@@ -81,12 +81,11 @@ class MapClass(INIClass):
 
     def _load_ins(self, constructor, section: str, *,
                   raw=False, pair=False, iniptr=False):
-        args = lambda x: (self, x) if iniptr else (x,)
         return (
-            [constructor(*args(i))
+            [constructor(*((self, i) if iniptr else (i,)))
              for i in self.getsection(section).items(useraw=raw)]
             if pair else
-            [constructor(*args(i))
+            [constructor(*((self, i) if iniptr else (i,)))
              for i in self.getsection(section).values(useraw=raw)]
         )
 

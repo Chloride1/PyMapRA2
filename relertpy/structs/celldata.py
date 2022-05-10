@@ -224,7 +224,7 @@ class Building:
         self.upgrades = []
         self.spotlight = 0
         self.ai_repair = True
-        self.norminal = False  # EnemyUIName doesn't work until Ares0b.
+        self.norminal = False  # EnemyUIName doesn't work until Ares 0.b.
 
     @classmethod
     def loadbuilding(cls, args: str):
