@@ -34,45 +34,61 @@ class MapClass(INIClass):
         super().__init__()
         self.load(pathref, encoding)
 
-        self.waypoints = [meta.Waypoint(wp) for wp in
-                          self.getsection("Waypoints").items(useraw=True)]
-        self.terrains = [meta.Terrain(t) for t in
-                         self.getsection("Terrain").items(useraw=True)]
-        self.celltags = [meta.CellTag(c) for c in
-                         self.getsection("CellTags").items(useraw=True)]
-        self.smudges = [meta.Smudge(s) for s in
-                        self.getsection("Smudge").values()]
-        self.taskforces = [meta.TaskForce(tf, source=self[tf]) for tf in
-                           self.gettypelist("TaskForces")]
-        self.scripts = [meta.Script(s, source=self[s]) for s in
-                        self.gettypelist("ScriptTypes")]
-        self.teams = [meta.Team(t, source=self[t]) for t in
-                      self.gettypelist("TeamTypes")]
-        self.aitriggers = [meta.AITrigger((idx, raw)) for idx, raw in
-                           self.getsection("AITriggerTypes").items()]
-        self.triggers = [meta.Trigger(self, t) for t in
-                         self.getsection("Triggers").items()]
-        self.tags = [meta.Tag(t) for t in
-                     self.getsection("Tags").items()]
-        self.localvars = [meta.LocalVar(lv) for lv in
-                          self.getsection("VariableNames").values()]
+        self.waypoints = self._load_ins(meta.Waypoint, 'Waypoints',
+                                        raw=True, pair=True)
+        self.terrains = self._load_ins(meta.Terrain, 'Terrain',
+                                       raw=True, pair=True)
+        self.celltags = self._load_ins(meta.CellTag, 'CellTags',
+                                       raw=True, pair=True)
+        self.smudges = self._load_ins(meta.Smudge, 'Smudge', raw=True)
+
+        self.taskforces = self._load_infos(meta.TaskForce, 'TaskForces')
+        self.scripts = self._load_infos(meta.Script, 'ScriptTypes')
+        self.teams = self._load_infos(meta.Team, 'TeamTypes')
+        self.aitriggers = self._load_ins(meta.AITrigger, 'AITriggerTypes',
+                                         pair=True)
+
+        self.triggers = self._load_ins(meta.Trigger, 'Triggers',
+                                       pair=True, iniptr=True)
+        self.tags = self._load_ins(meta.Tag, 'Tags', pair=True)
+        self.localvars = self._load_ins(meta.LocalVar, 'VariableNames')
+
         self.houses = (
             {idx: f'<Player @ {chr(loc)}>'
              for idx, loc in zip(range(4475, 4483), range(65, 73))}
-            if self.ismultiplay
-            else [meta.House(self, h) for h in
-                  self.gettypelist("Houses")]
+            if self.ismultiplay else
+            self._load_infos(meta.House, 'Houses', iniptr=True)
         )
-        self.countries = [meta.Country(self, cts) for cts in
-                          self.gettypelist("Countries")]
-        self.infantries = [meta.Infantry.loadinf(i) for i in
-                           self.getsection("Infantry").values()]
-        self.units = [meta.Vehicle.loadunit(v) for v in
-                      self.getsection("Units").values()]
-        self.buildings = [meta.Building.loadbuilding(b) for b in
-                          self.getsection("Structures").values()]
-        self.aircrafts = [meta.Aircraft.loadair(a) for a in
-                          self.getsection("Aircrafts").values()]
+        self.countries = self._load_infos(meta.Country, 'Countries',
+                                          iniptr=True)
+
+        self.infantries = self._load_ins(meta.Infantry.loadinf, 'Infantry')
+        self.units = self._load_ins(meta.Vehicle.loadunit, 'Units')
+        self.buildings = self._load_ins(meta.Building.loadbuilding,
+                                        'Structures')
+        self.aircrafts = self._load_ins(meta.Aircraft.loadair, 'Aircrafts')
+
+    def _load_infos(self, constructor, section: str, *,
+                    rp_origin=True, iniptr=False):
+        ti = []
+        for i in self.gettypelist(section):
+            ti.append(constructor(self, i)
+                      if iniptr else
+                      constructor(i, source=self[i]))
+            if rp_origin:
+                self[i] = ti[-1]
+        return ti
+
+    def _load_ins(self, constructor, section: str, *,
+                  raw=False, pair=False, iniptr=False):
+        args = lambda x: (self, x) if iniptr else (x,)
+        return (
+            [constructor(*args(i))
+             for i in self.getsection(section).items(useraw=raw)]
+            if pair else
+            [constructor(*args(i))
+             for i in self.getsection(section).values(useraw=raw)]
+        )
 
     def getfreeregid(self):
         while True:
@@ -110,7 +126,7 @@ class MapClass(INIClass):
 
     @property
     def mapdata(self):
-        return MappingProxyType(self["Maps"])
+        return MappingProxyType(self["Map"])
 
     @property
     def ismultiplay(self):
@@ -159,7 +175,7 @@ class MapClass(INIClass):
         # since in game it'll pick the first one among them.
         # as for keys, should be the last one.
 
-        # inline functions making the process l--ittle bit tidier.
+        # inline functions making the process little tidier.
         def regsync(array, src: str):
             if len(array) != len(self[src]):
                 self[src] = {

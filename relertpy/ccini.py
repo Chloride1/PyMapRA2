@@ -25,13 +25,11 @@ class INISectionClass(MutableMapping):
         self.section = section
         self.super = _super
         self._map = {}
-        if type(src) == INISectionClass:
-            self._map.update(src.items())
-        elif isinstance(src, MutableMapping):
+        if isinstance(src, MutableMapping):
             self._map = {str(k): str(v) for k, v in src.items()}
 
     def __setitem__(self, k, v):
-        self._map[k] = (Bool.tostring(v)  # to be consistent of FA2.
+        self._map[k] = (Bool.tostring(v)  # to be consistent with FA2.
                         if type(v) == bool
                         else str(v))
 
