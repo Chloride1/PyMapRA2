@@ -52,7 +52,7 @@ class Team(INISectionClass):
         return f'Team {self.section}'
 
     def __getitem__(self, item):
-        if item == 'Waypoint':
+        if item in ('Waypoint', 'TransportWaypoint'):
             return Waypoint.toint(self.get(item))
         else:
             return self.tryparse(item, self.get(item))
@@ -61,7 +61,7 @@ class Team(INISectionClass):
         if value is None:
             return super().__setitem__(key, "<none>")
         elif type(value) == int:
-            if key == 'Waypoint':
+            if key in ('Waypoint', 'TransportWaypoint'):
                 return super().__setitem__(key, Waypoint.tostring(value))
             elif (key == 'VeteranLevel') and (int(value) not in range(1, 4)):
                 raise ValueError("Expect level in 1-3.")
