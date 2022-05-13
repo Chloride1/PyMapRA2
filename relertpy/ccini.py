@@ -23,7 +23,7 @@ class INISectionClass(MutableMapping):
                  section: str, _super=None,
                  *, src: MutableMapping = None):
         self.section = section
-        self.super = _super
+        self.parent = _super
         self._map = {}
         if isinstance(src, MutableMapping):
             self._map = {str(k): str(v) for k, v in src.items()}
@@ -39,9 +39,9 @@ class INISectionClass(MutableMapping):
     def __getitem__(self, k):
         if k in self._map:
             return self.tryparse(k, self._map[k])
-        elif (isinstance(self.super, INISectionClass)
-              and k in self.super):
-            return self.super.tryparse(k, self.super.get(k))
+        elif (isinstance(self.parent, INISectionClass)
+              and k in self.parent):
+            return self.parent.tryparse(k, self.parent.get(k))
         else:
             raise KeyError(k)
 
@@ -53,8 +53,8 @@ class INISectionClass(MutableMapping):
 
     def __repr__(self):
         _info = "[{}]".format(self.section)
-        if self.super:
-            _info += ":[{}]".format(str(self.super))
+        if self.parent:
+            _info += ":[{}]".format(str(self.parent))
         return _info
 
     def __str__(self):
@@ -63,9 +63,9 @@ class INISectionClass(MutableMapping):
     def get(self, key, default=None):
         if key in self._map:
             return self._map[key]
-        elif (isinstance(self.super, INISectionClass)
-              and key in self.super):
-            return self.super.get(key, default)
+        elif (isinstance(self.parent, INISectionClass)
+              and key in self.parent):
+            return self.parent.get(key, default)
         else:
             return default
 
@@ -159,7 +159,7 @@ class INIClass:
 
     def rename(self, _old, _new):
         self[_new] = INISectionClass(_new,
-                                     self[_old].super,
+                                     self[_old].parent,
                                      src=self[_old])
         self.remove(_old)
 
@@ -236,12 +236,12 @@ class INIClass:
             options = list(self._raw.values())
             curopt = maxopt = len(options) - 1
 
-        i = fs.readline()
         # since we just read A map when called,
         # instead of processing multiple inis
         diff = 0
 
         while True:
+            i = fs.readline()
             if len(i) == 0:
                 break
             buffer = ''
@@ -270,10 +270,9 @@ class INIClass:
                             break
                         buffer2 += j
 
-                    options[curopt].super = (
+                    options[curopt].parent = (
                         options[sections.index(buffer2)]
-                        if buffer2 in sections else
-                        buffer2
+                        if buffer2 in sections else buffer2
                     )
             elif '=' in i:
                 j = i.split('=', 1)
@@ -282,21 +281,18 @@ class INIClass:
                     j[1] = j[1].split(";")[0].strip()
                     # ares struct: += a
                     if j[0] == '+':
-                        options[curopt].update(
-                            zip([f"+{diff}"], [j[1]])
-                        )
+                        options[curopt].update(zip([f"+{diff}"], [j[1]]))
                         diff += 1
                     else:
                         options[curopt].update(zip([j[0]], [j[1]]))
-            i = fs.readline()
 
         self._raw = dict(zip(sections, options))
         return len(sections), len(options)
 
     def __fwrite(self, fs, section: str, delim: str):
         sect = self._raw[section]
-        fs.write("{}\n".format(sect))
+        fs.write(f"{sect}\n")
         for key, value in sect.items(useraw=True):
             value = delim + value.replace('\n', '\n\t')
-            fs.write("{}{}\n".format(key, value))
+            fs.write(f"{key}{value}\n")
         fs.write("\n")
