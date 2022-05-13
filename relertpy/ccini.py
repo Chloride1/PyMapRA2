@@ -291,7 +291,7 @@ class INIClass:
 
     def __fwrite(self, fs, section: str, delim: str):
         sect = self._raw[section]
-        fs.write(f"{sect}\n")
+        fs.write(f"{repr(sect)}\n")
         for key, value in sect.items(useraw=True):
             value = delim + value.replace('\n', '\n\t')
             fs.write(f"{key}{value}\n")

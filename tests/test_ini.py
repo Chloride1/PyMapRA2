@@ -11,3 +11,5 @@ config1 = ini.INIClass()
 config1.load(".\\eg.ini")
 print(config1['ExampleInherit']['IsCasheenBurnt'])
 print(config1['ExampleInherit']['VoiceDoi'])
+
+config1.save("..\\ego.ini")
