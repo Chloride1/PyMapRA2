@@ -222,12 +222,19 @@ class INIClass:
         :param encoding: text encoding.
         :param withspace: shall we use spaces around '='?
         """
-        with open(dst, 'w', encoding=encoding) as fs:
-            for section in self._raw.keys():
-                self.__fwrite(fs, section,
-                              ' = ' if withspace else '=')
 
-    def __fread(self, fs):
+        def __fwrite(stream, sect: INISectionClass, delim: str):
+            stream.write(f"{repr(sect)}\n")
+            for key, value in sect.items(useraw=True):
+                value = delim + value.replace('\n', '\n\t')
+                stream.write(f"{key}{value}\n")
+            stream.write("\n")
+
+        with open(dst, 'w', encoding=encoding) as fs:
+            for section in self.sections:
+                __fwrite(fs, section, ' = ' if withspace else '=')
+
+    def __fread(self, stream):
         if not self._raw:
             sections, options = [], []
             curopt = maxopt = -1
@@ -241,7 +248,7 @@ class INIClass:
         diff = 0
 
         while True:
-            i = fs.readline()
+            i = stream.readline()
             if len(i) == 0:
                 break
             buffer = ''
@@ -281,18 +288,9 @@ class INIClass:
                     j[1] = j[1].split(";")[0].strip()
                     # ares struct: += a
                     if j[0] == '+':
-                        options[curopt].update(zip([f"+{diff}"], [j[1]]))
+                        j[0] = f"+{diff}"
                         diff += 1
-                    else:
-                        options[curopt].update(zip([j[0]], [j[1]]))
+                    options[curopt].update([j])
 
         self._raw = dict(zip(sections, options))
         return len(sections), len(options)
-
-    def __fwrite(self, fs, section: str, delim: str):
-        sect = self._raw[section]
-        fs.write(f"{repr(sect)}\n")
-        for key, value in sect.items(useraw=True):
-            value = delim + value.replace('\n', '\n\t')
-            fs.write(f"{key}{value}\n")
-        fs.write("\n")
