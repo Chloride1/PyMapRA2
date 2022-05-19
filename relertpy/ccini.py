@@ -7,15 +7,8 @@ from typing import MutableMapping
 
 from .types import Array, Bool
 
-__all__ = ["INIParseException",
-           "INIClass", "INISectionClass",
+__all__ = ["INIClass", "INISectionClass",
            ]
-
-
-class INIParseException(Exception):
-    def __init__(self, *args: object) -> None:
-        """Exception to all errors when parsing ini."""
-        super().__init__(*args)
 
 
 class INISectionClass(MutableMapping):
