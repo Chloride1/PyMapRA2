@@ -43,9 +43,9 @@ class Team(INISectionClass):
         super().__init__(section, src=source)
         # simplify bools.
         for i in _team_def_no:
-            if not self.tryparse(self.get(i), 'no'):
+            if self.tryparse(i, self.get(i)) is False:
                 del self[i]
-        if self.tryparse(self.get(_team_def_yes), 'yes'):
+        if self.tryparse(_team_def_yes, self.get(_team_def_yes)):
             del self[_team_def_yes]
 
     def __repr__(self) -> str:

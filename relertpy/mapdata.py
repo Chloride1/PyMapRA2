@@ -68,24 +68,24 @@ class MapClass(INIClass):
                                         'Structures')
         self.aircrafts = self._load_ins(meta.Aircraft.loadair, 'Aircrafts')
 
-    def _load_infos(self, constructor, section: str, *,
+    def _load_infos(self, t_meta, section: str, *,
                     rp_origin=True, iniptr=False):
         ti = []
         for i in self.gettypelist(section):
-            ti.append(constructor(self, i)
+            ti.append(t_meta(self, i)
                       if iniptr else
-                      constructor(i, source=self[i]))
+                      t_meta(i, source=dict(self[i].items(useraw=True))))
             if rp_origin:
                 self[i] = ti[-1]
         return ti
 
-    def _load_ins(self, constructor, section: str, *,
+    def _load_ins(self, t_meta, section: str, *,
                   raw=False, pair=False, iniptr=False):
         return (
-            [constructor(*((self, i) if iniptr else (i,)))
+            [t_meta(*((self, i) if iniptr else (i,)))
              for i in self.getsection(section).items(useraw=raw)]
             if pair else
-            [constructor(*((self, i) if iniptr else (i,)))
+            [t_meta(*((self, i) if iniptr else (i,)))
              for i in self.getsection(section).values(useraw=raw)]
         )
 

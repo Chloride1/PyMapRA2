@@ -174,7 +174,7 @@ class Vehicle:
         self.veteran = 0
         self.group = -1
         self.onbridge = False
-        self.train_follow = False
+        self.followid = -1
         self.autocreate_no = False
         self.autocreate_yes = True
 
@@ -193,7 +193,7 @@ class Vehicle:
         ret.veteran = int(args[8])
         ret.group = int(args[9])
         ret.onbridge = args[10] == '1'
-        ret.train_follow = args[11] == '1'
+        ret.followid = int(args[11])
         ret.autocreate_no = args[12] == '1'
         ret.autocreate_yes = args[13] == '1'
         return ret
@@ -202,7 +202,7 @@ class Vehicle:
         return ",".join(map(str, [
             self.owner, self.typeof, self.health, self.coord, self.facing,
             self.mission, self.tag, self.veteran, self.group,
-            int(self.onbridge), int(self.train_follow),
+            int(self.onbridge), self.followid,
             int(self.autocreate_no), int(self.autocreate_yes)
         ]))
 
