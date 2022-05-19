@@ -26,7 +26,7 @@ class INISectionClass(MutableMapping):
         self.parent = _super
         self._map = {}
         if isinstance(src, MutableMapping):
-            self._map = {str(k): str(v) for k, v in src.items()}
+            self.update({str(k): v for k, v in src.items()})
 
     def __setitem__(self, k, v):
         self._map[k] = (Bool.tostring(v)  # to be consistent with FA2.
@@ -52,13 +52,16 @@ class INISectionClass(MutableMapping):
         return iter(self._map)
 
     def __repr__(self):
-        _info = "[{}]".format(self.section)
-        if self.parent:
-            _info += ":[{}]".format(str(self.parent))
-        return _info
+        return "Section {}".format(self.section)
 
     def __str__(self):
         return self.section
+
+    def tostring(self):
+        _info = f"[{self.section}]"
+        if self.parent:
+            _info += f":[{str(self.parent)}]"
+        return _info
 
     def get(self, key, default=None):
         if key in self._map:
@@ -224,7 +227,7 @@ class INIClass:
         """
 
         def __fwrite(stream, sect: INISectionClass, delim: str):
-            stream.write(f"{repr(sect)}\n")
+            stream.write(f"{sect.tostring()}\n")
             for key, value in sect.items(useraw=True):
                 value = delim + value.replace('\n', '\n\t')
                 stream.write(f"{key}{value}\n")

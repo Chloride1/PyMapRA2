@@ -159,7 +159,7 @@ class MapClass(INIClass):
                       'AmbientChangeStep',
                       str(float(value)))
 
-    def save(self, dst=None, encoding=None, withspace=True):
+    def save(self, dst=None, encoding=None, withspace=False):
         """
         Save as a map file.
 
