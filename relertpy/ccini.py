@@ -12,14 +12,12 @@ __all__ = ["INIClass", "INISectionClass",
 
 
 class INISectionClass(MutableMapping):
-    def __init__(self,
-                 section: str, _super=None,
-                 *, src: MutableMapping = None):
+    def __init__(self, section: str, _super=None, **kwargs):
         self.section = section
         self.parent = _super
         self._map = {}
-        if isinstance(src, MutableMapping):
-            self.update({str(k): v for k, v in src.items()})
+        if kwargs:
+            self.update(kwargs)
 
     def __setitem__(self, k, v):
         self._map[k] = (Bool.tostring(v)  # to be consistent with FA2.
@@ -38,6 +36,9 @@ class INISectionClass(MutableMapping):
         else:
             raise KeyError(k)
 
+    def __contains__(self, item):
+        return item in self._map
+
     def __len__(self) -> int:
         return len(self._map)
 
@@ -45,15 +46,15 @@ class INISectionClass(MutableMapping):
         return iter(self._map)
 
     def __repr__(self):
-        return "Section {}".format(self.section)
+        return f"Section {self.section}"
 
     def __str__(self):
         return self.section
 
     def tostring(self):
-        _info = f"[{self.section}]"
+        _info = "[%s]" % self.section
         if self.parent:
-            _info += f":[{str(self.parent)}]"
+            _info += ":[%s]" % self.parent
         return _info
 
     def get(self, key, default=None):
@@ -91,7 +92,7 @@ class INISectionClass(MutableMapping):
         elif value.lower() in ('none', '<none>'):  # NoneType
             return None
         elif re.findall(",+", value):  # Array
-            return Array([i.strip() for i in re.split(",+", value)])
+            return Array(i.strip() for i in re.split(",+", value))
         else:  # str itself
             return value
 
@@ -120,7 +121,7 @@ class INIClass:
         if isinstance(value, INISectionClass):
             self._raw[key] = value
         else:
-            self._raw[key] = INISectionClass(key, src=value)
+            self._raw[key] = INISectionClass(key, **value)
 
     def __delitem__(self, key):
         del self._raw[key]
@@ -156,7 +157,7 @@ class INIClass:
     def rename(self, _old, _new):
         self[_new] = INISectionClass(_new,
                                      self[_old].parent,
-                                     src=self[_old])
+                                     **self[_old])
         self.remove(_old)
 
     def getsection(self, section):
@@ -218,17 +219,14 @@ class INIClass:
         :param encoding: text encoding.
         :param withspace: shall we use spaces around '='?
         """
-
-        def __fwrite(stream, sect: INISectionClass, delim: str):
-            stream.write(f"{sect.tostring()}\n")
-            for key, value in sect.items(useraw=True):
-                value = delim + value.replace('\n', '\n\t')
-                stream.write(f"{key}{value}\n")
-            stream.write("\n")
+        _eq = ' = ' if withspace else '='
 
         with open(dst, 'w', encoding=encoding) as fs:
-            for section in self.sections:
-                __fwrite(fs, section, ' = ' if withspace else '=')
+            for i in self.sections:
+                fs.write(f"{i.tostring()}\n")
+                for key, value in i.items(useraw=True):
+                    fs.write(f"{key}{_eq}{value}\n")
+                fs.write("\n")
 
     def __fread(self, stream):
         if not self._raw:

@@ -92,8 +92,7 @@ class MapClass(INIClass):
 
     def getfreeregid(self):
         while True:
-            idx = '{0:0>8}-G'.format(str(uuid4()).split("-")[0]
-                                     .upper())
+            idx = "%08s-G" % str(uuid4()).split("-")[0].upper()
             if not self.hassection(idx):
                 return idx
 

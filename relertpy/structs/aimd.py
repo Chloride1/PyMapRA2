@@ -40,7 +40,7 @@ class Team(INISectionClass):
         if source is None:
             source = _team_default.copy()
 
-        super().__init__(section, src=source)
+        super().__init__(section, **source)
         # simplify bools.
         for i in _team_def_no:
             if self.tryparse(i, self.get(i)) is False:
@@ -74,7 +74,7 @@ class Script(INISectionClass):
     def __init__(self, section, *, source=None):
         if source is None:
             source = {'Name': 'New Script'}
-        super().__init__(section, src=source)
+        super().__init__(section, **source)
 
     def __getitem__(self, item):
         return super().__getitem__(str(item))
@@ -90,7 +90,7 @@ class TaskForce(INISectionClass):
     def __init__(self, section, *, source=None):
         if source is None:
             source = {"Name": "New Taskforce"}
-        super().__init__(section, src=source)
+        super().__init__(section, **source)
 
     def __getitem__(self, item):
         return super().__getitem__(str(item))
@@ -114,7 +114,7 @@ class AITrigger(Array):
             self[i] = self[i].strip()
 
     def apply(self):
-        return self.id, (f"{self.name}," + ",".join(self))
+        return self.id, "%s,%s" % (self.name, ",".join(self))
 
     def __repr__(self) -> str:
         return f'AITrigger {self.id}'

@@ -29,7 +29,7 @@ class Array(Sequence):
         return self._lst.__iter__()
 
     def __repr__(self):
-        return "@({})".format(str(self._lst)[1:-1])
+        return "@(%s)" % str(self._lst)[1:-1]
 
     def __str__(self):
         return ",".join(map(str, self._lst))
@@ -39,7 +39,7 @@ class Coord:
     @staticmethod
     def split(obj_coord: str):
         x = int(obj_coord) % 1000
-        y = int(obj_coord.rsplit('{:0>3d}'.format(x), 1)[0])
+        y = int(obj_coord.rsplit(f'{x:03d}', 1)[0])
         return x, y
 
     @staticmethod

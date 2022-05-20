@@ -34,7 +34,7 @@ from ..ccini import INISectionClass
 
 class House(INISectionClass):
     def __init__(self, pini, h_name):
-        super().__init__(h_name, src=pini[h_name])
+        super().__init__(h_name, **pini[h_name])
 
     def __repr__(self):
         return self.section
@@ -60,7 +60,7 @@ class House(INISectionClass):
 
 class Country(INISectionClass):
     def __init__(self, pini, c_name):
-        super().__init__(c_name, src=pini[c_name])
+        super().__init__(c_name, **pini[c_name])
 
     def __repr__(self):
         return self.section
