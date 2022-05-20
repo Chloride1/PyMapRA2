@@ -247,35 +247,20 @@ class INIClass:
             i = stream.readline()
             if len(i) == 0:
                 break
-            buffer = ''
             if i[0] == '[':
-                for j in i:
-                    if j == '[':
-                        continue
-                    elif j == ']':
-                        break
-                    buffer += j
-
-                if buffer in sections:
-                    curopt = sections.index(buffer)
+                cursect = [j.strip()[1:-1] for j in i.split(':')]
+                if cursect[0] in sections:
+                    curopt = sections.index(cursect[0])
                 else:
-                    sections.append(buffer)
-                    options.append(INISectionClass(buffer))
+                    sections.append(cursect[0])
+                    options.append(INISectionClass(cursect[0]))
                     maxopt += 1
                     curopt = maxopt
                 # ares struct: [a]:[b]
-                if ":" in i:
-                    buffer2 = ''
-                    for j in i[i.index(':') + 1:]:
-                        if j == '[':
-                            continue
-                        elif j == ']':
-                            break
-                        buffer2 += j
-
+                if len(cursect) > 1:
                     options[curopt].parent = (
-                        options[sections.index(buffer2)]
-                        if buffer2 in sections else buffer2
+                        options[sections.index(cursect[1])]
+                        if cursect[1] in sections else cursect[1]
                     )
             elif '=' in i:
                 j = i.split('=', 1)
