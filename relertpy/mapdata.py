@@ -34,69 +34,68 @@ class MapClass(INIClass):
         super().__init__()
         self.load(pathref, encoding)
 
-        self.waypoints = self._load_ins(meta.Waypoint, 'Waypoints',
-                                        raw=True, pair=True)
-        self.terrains = self._load_ins(meta.Terrain, 'Terrain',
-                                       raw=True, pair=True)
-        self.celltags = self._load_ins(meta.CellTag, 'CellTags',
-                                       raw=True, pair=True)
-        self.smudges = self._load_ins(meta.Smudge, 'Smudge', raw=True)
+        def _getreg(_meta, _section: str, *,
+                    rp_origin=True, iniptr=False):
+            ti = []
+            for i in self.gettypelist(_section):
+                ti.append(
+                    _meta(self, i) if iniptr else
+                    _meta(i, source=dict(self[i].items(useraw=True)))
+                )
+                if rp_origin:
+                    self[i] = ti[-1]
+            return ti
 
-        self.taskforces = self._load_infos(meta.TaskForce, 'TaskForces')
-        self.scripts = self._load_infos(meta.Script, 'ScriptTypes')
-        self.teams = self._load_infos(meta.Team, 'TeamTypes')
-        self.aitriggers = self._load_ins(meta.AITrigger, 'AITriggerTypes',
-                                         pair=True)
+        def _gettype(_meta, _sect: str, *,
+                     raw=False, pair=False, iniptr=False):
+            return (
+                [_meta(*((self, i) if iniptr else (i,)))
+                 for i in self.getsection(_sect).items(useraw=raw)]
+                if pair else
+                [_meta(*((self, i) if iniptr else (i,)))
+                 for i in self.getsection(_sect).values(useraw=raw)]
+            )
 
-        self.triggers = self._load_ins(meta.Trigger, 'Triggers',
-                                       pair=True, iniptr=True)
-        self.tags = self._load_ins(meta.Tag, 'Tags', pair=True)
-        self.localvars = self._load_ins(meta.LocalVar, 'VariableNames')
+        self.waypoints = _gettype(meta.Waypoint, 'Waypoints',
+                                  raw=True, pair=True)
+        self.terrains = _gettype(meta.Terrain, 'Terrain',
+                                 raw=True, pair=True)
+        self.celltags = _gettype(meta.CellTag, 'CellTags',
+                                 raw=True, pair=True)
+        self.smudges = _gettype(meta.Smudge, 'Smudge')
+
+        self.taskforces = _getreg(meta.TaskForce, 'TaskForces')
+        self.scripts = _getreg(meta.Script, 'ScriptTypes')
+        self.teams = _getreg(meta.Team, 'TeamTypes')
+        self.aitriggers = _gettype(meta.AITrigger, 'AITriggerTypes',
+                                   pair=True)
+
+        self.triggers = _gettype(meta.Trigger, 'Triggers',
+                                 pair=True, iniptr=True)
+        self.tags = _gettype(meta.Tag, 'Tags', pair=True)
+        self.localvars = _gettype(meta.LocalVar, 'VariableNames')
 
         self.houses = (
             {idx: f'<Player @ {chr(loc)}>'
              for idx, loc in zip(range(4475, 4483), range(65, 73))}
             if self.ismultiplay else
-            self._load_infos(meta.House, 'Houses', iniptr=True)
+            _getreg(meta.House, 'Houses', iniptr=True)
         )
-        self.countries = self._load_infos(meta.Country, 'Countries',
-                                          iniptr=True)
+        self.countries = _getreg(meta.Country, 'Countries',
+                                 iniptr=True)
 
-        self.infantries = self._load_ins(meta.Infantry.loadinf, 'Infantry')
-        self.units = self._load_ins(meta.Vehicle.loadunit, 'Units')
-        self.buildings = self._load_ins(meta.Building.loadbuilding,
-                                        'Structures')
-        self.aircrafts = self._load_ins(meta.Aircraft.loadair, 'Aircrafts')
-
-    def _load_infos(self, t_meta, section: str, *,
-                    rp_origin=True, iniptr=False):
-        ti = []
-        for i in self.gettypelist(section):
-            ti.append(t_meta(self, i)
-                      if iniptr else
-                      t_meta(i, source=dict(self[i].items(useraw=True))))
-            if rp_origin:
-                self[i] = ti[-1]
-        return ti
-
-    def _load_ins(self, t_meta, section: str, *,
-                  raw=False, pair=False, iniptr=False):
-        return (
-            [t_meta(*((self, i) if iniptr else (i,)))
-             for i in self.getsection(section).items(useraw=raw)]
-            if pair else
-            [t_meta(*((self, i) if iniptr else (i,)))
-             for i in self.getsection(section).values(useraw=raw)]
-        )
+        self.infantries = _gettype(meta.Infantry.loadinf, 'Infantry')
+        self.units = _gettype(meta.Vehicle.loadunit, 'Units')
+        self.buildings = _gettype(meta.Building.loadbuilding,
+                                  'Structures')
+        self.aircrafts = _gettype(meta.Aircraft.loadair, 'Aircrafts')
 
     def getfreeregid(self):
         while True:
-            idx = '{0:0>8}-G'.format(str(uuid4())
-                                     .split("-")[0]
+            idx = '{0:0>8}-G'.format(str(uuid4()).split("-")[0]
                                      .upper())
             if not self.hassection(idx):
-                break
-        return idx
+                return idx
 
     # global settings
     @property
@@ -175,46 +174,46 @@ class MapClass(INIClass):
         # as for keys, should be the last one.
 
         # inline functions making the process little tidier.
-        def regsync(array, src: str):
-            if len(array) != len(self[src]):
-                self[src] = {
-                    str(array.index(reg.section)): reg.section
-                    for reg in array
+        def _regsync(_src, _sect: str):
+            if len(_src) != len(self[_sect]):
+                self[_sect] = {
+                    str(_src.index(reg.section)): reg.section
+                    for reg in _src
                 }
 
-        def objsync(array, src: str):
-            if len(array) != 0:
-                self[src] = {
+        def _typesync(_src, _sect: str):
+            if len(_src) != 0:
+                self[_sect] = {
                     str(idx): obj.apply()
-                    for idx, obj in zip(range(len(array)), array)
+                    for idx, obj in zip(range(len(_src)), _src)
                 }
 
-        def objsync_pair(array, src: str):
-            if len(array) != 0:
-                self[src] = {
+        def _pairsync(_src, _sect: str):
+            if len(_src) != 0:
+                self[_sect] = {
                     pair.apply()[0]: pair.apply()[1]
-                    for pair in array
+                    for pair in _src
                 }
 
         if not self.ismultiplay:
-            regsync(self.houses, "Houses")
-            regsync(self.countries, "Countries")
-        regsync(self.scripts, "ScriptTypes")
-        regsync(self.taskforces, "TaskForces")
-        regsync(self.teams, "TeamTypes")
+            _regsync(self.houses, "Houses")
+            _regsync(self.countries, "Countries")
+        _regsync(self.scripts, "ScriptTypes")
+        _regsync(self.taskforces, "TaskForces")
+        _regsync(self.teams, "TeamTypes")
 
-        objsync(self.localvars, "VariableNames")
-        objsync(self.smudges, "Smudge")
-        objsync(self.infantries, "Infantry")
-        objsync(self.units, "Units")
-        objsync(self.buildings, "Structures")
-        objsync(self.aircrafts, "Aircrafts")
+        _typesync(self.localvars, "VariableNames")
+        _typesync(self.smudges, "Smudge")
+        _typesync(self.infantries, "Infantry")
+        _typesync(self.units, "Units")
+        _typesync(self.buildings, "Structures")
+        _typesync(self.aircrafts, "Aircrafts")
 
-        objsync_pair(self.terrains, "Terrain")
-        objsync_pair(self.celltags, "CellTags")
-        objsync_pair(self.aitriggers, "AITriggerTypes")
-        objsync_pair(self.triggers, "Triggers")
-        objsync_pair(self.tags, "Tags")
+        _pairsync(self.terrains, "Terrain")
+        _pairsync(self.celltags, "CellTags")
+        _pairsync(self.aitriggers, "AITriggerTypes")
+        _pairsync(self.triggers, "Triggers")
+        _pairsync(self.tags, "Tags")
 
         # I have to split as these are special cases = =
         if len(self.triggers) != 0:
